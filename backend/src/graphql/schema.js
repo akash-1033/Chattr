@@ -15,8 +15,7 @@ export const typeDefs = gql`
     updatedAt: String!
   }
 
-  type AuthPayload {
-    token: String!
+  type UserPayload {
     user: User!
   }
 
@@ -27,8 +26,10 @@ export const typeDefs = gql`
       password: String!
       profilePic: String
       bio: String
-    ): AuthPayload!
+    ): UserPayload!
 
-    login(email: String!, password: String!): AuthPayload!
+    login(email: String!, password: String!): UserPayload!
+
+    logout: Boolean! 
   }
 `;

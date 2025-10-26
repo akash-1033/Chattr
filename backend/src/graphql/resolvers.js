@@ -1,4 +1,4 @@
-import { signup, login, getAllUsers } from "../controllers/userController.js";
+import { signup, login, getAllUsers, logout } from "../controllers/userController.js";
 
 export const resolvers = {
   Query: {
@@ -6,7 +6,8 @@ export const resolvers = {
   },
 
   Mutation: {
-    signup: (_, args) => signup(args),
-    login: (_, args) => login(args),
+    signup: (_, args, context) => signup(args, context.res),
+    login: (_, args, context) => login(args, context.res),
+    logout: (_, __, context) => logout(context.res),
   },
 };
