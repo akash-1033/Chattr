@@ -7,3 +7,4 @@ npm-debug.log
 .vscode/
 .idea/
 /src/generated/prisma
+src/config/*.pem

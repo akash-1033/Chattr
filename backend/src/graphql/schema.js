@@ -3,6 +3,7 @@ import { gql } from "apollo-server-express";
 export const typeDefs = gql`
   type Query {
     testUsers: [User!]!
+    getAllUsers: [User!]!
   }
 
   type User {
@@ -10,6 +11,7 @@ export const typeDefs = gql`
     fullName: String!
     email: String!
     profilePic: String
+    profilePicUrl: String
     bio: String
     createdAt: String!
     updatedAt: String!
@@ -30,6 +32,14 @@ export const typeDefs = gql`
 
     login(email: String!, password: String!): UserPayload!
 
-    logout: Boolean! 
+    logout: Boolean!
+
+    updateProfile(
+      fullName: String
+      bio: String
+      fileName: String
+      contentType: String
+      fileBuffer: String
+    ): User!
   }
 `;
