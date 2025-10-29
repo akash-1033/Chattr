@@ -5,6 +5,7 @@ import {
   SIGNUP_MUTATION,
   LOGIN_MUTATION,
   LOGOUT_MUTATION,
+  UPDATE_PROFILE_MUTATION,
 } from "../graphql/userMutations";
 
 export const useAuthStore = create(
@@ -64,6 +65,35 @@ export const useAuthStore = create(
           console.warn("Logout error (ignored):", msg);
         }
         set({ user: null });
+      },
+
+      updateProfile: async ({
+        fullName,
+        bio,
+        fileBuffer,
+        fileName,
+        contentType,
+      }) => {
+        try {
+          const data = await graphqlClient.request(UPDATE_PROFILE_MUTATION, {
+            fullName,
+            bio,
+            fileBuffer,
+            fileName,
+            contentType,
+          });
+          const updatedUser = data.updateProfile;
+          set({ user: updatedUser, loading: false });
+          return updatedUser;
+        } catch (err) {
+          const msg =
+            err?.response?.errors?.[0]?.message ||
+            err?.message ||
+            "Something went wrong. Please try again.";
+          console.log("Update Details Error:", err);
+          set({ error: msg, loading: false });
+          throw new Error(msg);
+        }
       },
     }),
     {

@@ -31,3 +31,26 @@ export const LOGOUT_MUTATION = `
     logout
   }
 `;
+
+export const UPDATE_PROFILE_MUTATION = `
+  mutation UpdateProfile(
+    $fullName: String
+    $bio: String
+    $fileBuffer: String
+    $contentType: String
+    $fileName: String
+  ) {
+    updateProfile(
+      fullName: $fullName
+      bio: $bio
+      fileBuffer: $fileBuffer
+      contentType: $contentType
+      fileName: $fileName
+    ) {
+      id
+      fullName
+      bio
+      profilePicUrl
+    }
+  }
+`;

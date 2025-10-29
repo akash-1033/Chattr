@@ -1,16 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { useAuthStore } from "../store/authStore";
 import assets from "../assets/assets";
 
 const ProfilePage = () => {
+  const { user, updateProfile } = useAuthStore();
+
   const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
   const [name, setName] = useState("Akash");
   const [bio, setBio] = useState("Hello");
+  const [loading, setLoading] = useState(false);
+  const [profilePic, setProfilePic] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setName(user.fullName || "");
+      setBio(user.bio || "");
+      setProfilePic(user.profilePicUrl);
+    }
+  }, [user]);
+
+  const toBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/");
+    setLoading(true);
+
+    try {
+      let fileBuffer = null;
+      let fileName = null;
+      let contentType = null;
+
+      if (selectedImage) {
+        const base64 = await toBase64(selectedImage);
+        fileBuffer = base64.split(",")[1];
+        contentType = selectedImage.type;
+        fileName = selectedImage.name;
+      }
+      const variables = {
+        fullName: name,
+        bio,
+        fileBuffer,
+        contentType,
+        fileName,
+      };
+
+      const updatedUser = await updateProfile(variables);
+      console.log(updatedUser);
+      toast.success("User details updated!");
+    } catch (err) {
+      toast.error(err.message || "Somethign went wrong!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,9 +93,7 @@ const ProfilePage = () => {
             />
             <img
               src={
-                selectedImage
-                  ? URL.createObjectURL(selectedImage)
-                  : assets.avatar_icon
+                selectedImage ? URL.createObjectURL(selectedImage) : profilePic
               }
               alt=""
               className={`w-12 h-12 ${selectedImage && "rounded-full"}`}
@@ -81,7 +130,7 @@ const ProfilePage = () => {
         </form>
         <img
           className="max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10"
-          src={assets.logo_icon}
+          src={selectedImage ? URL.createObjectURL(selectedImage) : profilePic}
           alt=""
         />
       </div>
