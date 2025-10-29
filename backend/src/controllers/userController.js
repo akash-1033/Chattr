@@ -36,7 +36,8 @@ export const signup = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  return { user };
+  const profilePicUrl = generateCloudUrl(user.profilePic);
+  return { user: { ...user, profilePicUrl } };
 };
 
 export const login = async (req, res) => {
@@ -61,7 +62,8 @@ export const login = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  return { user };
+  const profilePicUrl = generateCloudUrl(user.profilePic);
+  return { user: { ...user, profilePicUrl } };
 };
 
 export const getAllUsers = async () => {
@@ -83,7 +85,10 @@ export const updateProfile = async (userId, args) => {
   let newProfileKey = currentUser.profilePic;
 
   if (fileBuffer && contentType && fileName) {
-    if (currentUser.profilePic && currentUser.profilePic !== DEFAULT_AVATAR_KEY) {
+    if (
+      currentUser.profilePic &&
+      currentUser.profilePic !== DEFAULT_AVATAR_KEY
+    ) {
       await deleteFromS3(currentUser.profilePic);
     }
     const timestamp = Date.now();

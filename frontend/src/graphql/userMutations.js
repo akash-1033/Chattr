@@ -6,7 +6,7 @@ export const SIGNUP_MUTATION = `
         fullName
         email
         bio
-        profilePic
+        profilePicUrl
       }
     }
   }
@@ -20,7 +20,7 @@ export const LOGIN_MUTATION = `
         fullName
         email
         bio
-        profilePic
+        profilePicUrl
       }
     }
   }

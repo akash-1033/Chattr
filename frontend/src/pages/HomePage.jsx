@@ -1,9 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import ChatContainer from "../components/ChatContainer";
 import RightSidebar from "../components/RightSidebar";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { useAuthStore } from "../store/authStore";
 
 const HomePage = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  // if (!user) return null;
+
   const [selectedUser, setSelectedUser] = useState(false);
   return (
     <div className="border w-full h-screen sm:px-[15%] sm:py-[5%]">
