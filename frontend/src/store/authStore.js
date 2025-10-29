@@ -22,9 +22,13 @@ export const useAuthStore = create(
           set({ user, loading: false });
           return user;
         } catch (err) {
+          const msg =
+            err?.response?.errors?.[0]?.message ||
+            err?.message ||
+            "Something went wrong. Please try again.";
           console.error("Signup Error:", err);
-          set({ error: err.message, loading: false });
-          throw err;
+          set({ error: msg, loading: false });
+          throw new Error(msg);
         }
       },
 
@@ -39,9 +43,13 @@ export const useAuthStore = create(
           set({ user, loading: false });
           return user;
         } catch (err) {
+          const msg =
+            err?.response?.errors?.[0]?.message ||
+            err?.message ||
+            "Something went wrong. Please try again.";
           console.error("Login Error:", err);
-          set({ error: err.message, loading: false });
-          throw err;
+          set({ error: msg, loading: false });
+          throw new Error(msg);
         }
       },
 
@@ -49,7 +57,11 @@ export const useAuthStore = create(
         try {
           await graphqlClient.rawRequest(LOGOUT_MUTATION);
         } catch (err) {
-          console.warn("Logout error (ignored):", err.message);
+          const msg =
+            err?.response?.errors?.[0]?.message ||
+            err?.message ||
+            "Something went wrong. Please try again.";
+          console.warn("Logout error (ignored):", msg);
         }
         set({ user: null });
       },
