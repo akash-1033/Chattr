@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import assets, { userDummyData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 
 const Sidebar = ({ selectedUser, setSelectedUser }) => {
+  const { users, fetchUsers, logout } = useAuthStore();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const navigate = useNavigate();
   return (
     <div
@@ -29,7 +37,16 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
                 Edit Profile
               </p>
               <hr className="my-2 border-t border-gray-500" />
-              <p className="cursor-pointer text-sm">Logout</p>
+              <p
+                onClick={() => {
+                  logout();
+                  toast.success("Logged out successfully");
+                  setTimeout(() => navigate("/login"), 1000);
+                }}
+                className="cursor-pointer text-sm"
+              >
+                Logout
+              </p>
             </div>
           </div>
         </div>
@@ -45,18 +62,18 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
       </div>
 
       <div className="flex flex-col">
-        {userDummyData.map((user, index) => (
+        {users.map((user, index) => (
           <div
             onClick={() => {
               setSelectedUser(user);
             }}
             key={index}
             className={`relative flex items-center gap-2 p-2 pl-4 rounded cursor-pointer max-sm:text-sm ${
-              selectedUser?._id === user._id && "bg-[#282142]/50"
+              selectedUser?._id === user.id && "bg-[#282142]/50"
             }`}
           >
             <img
-              src={user?.profilePic || assets.avatar_icon}
+              src={user?.profilePicUrl || assets.avatar_icon}
               alt="profile-pic"
               className="w-[35px] aspect-[1/1] rounded-full"
             />

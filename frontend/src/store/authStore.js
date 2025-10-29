@@ -7,13 +7,24 @@ import {
   LOGOUT_MUTATION,
   UPDATE_PROFILE_MUTATION,
 } from "../graphql/userMutations";
+import { GET_ALL_USERS } from "../graphql/userQueries";
 
 export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
+      users: [],
       loading: false,
       error: null,
+
+      fetchUsers: async () => {
+        try {
+          const data = await graphqlClient.request(GET_ALL_USERS);
+          set({ users: data.getAllUsers });
+        } catch (err) {
+          console.error("Failed to fetch users:", err);
+        }
+      },
 
       signup: async (formData) => {
         set({ loading: true, error: null });

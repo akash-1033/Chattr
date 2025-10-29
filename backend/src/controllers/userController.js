@@ -110,7 +110,7 @@ export const updateProfile = async (userId, args) => {
 export const getAllUsersExceptMe = async (userId) => {
   const users = await prisma.user.findMany({
     where: { NOT: { id: userId } },
-    select: { id: true, fullName: true, profilePic: true },
+    select: { id: true, fullName: true, profilePic: true, bio: true },
   });
 
   return users.map((u) => ({

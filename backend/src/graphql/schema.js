@@ -3,7 +3,7 @@ import { gql } from "apollo-server-express";
 export const typeDefs = gql`
   type Query {
     testUsers: [User!]!
-    getAllUsers: [User!]!
+    getAllUsers: [User]
   }
 
   type User {
