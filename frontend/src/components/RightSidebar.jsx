@@ -1,7 +1,13 @@
 import React from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 import assets, { imagesDummyData } from "../assets/assets";
 
 const RightSidebar = ({ selectedUser }) => {
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
   return (
     selectedUser && (
       <div
@@ -37,6 +43,11 @@ const RightSidebar = ({ selectedUser }) => {
           </div>
         </div>
         <button
+          onClick={() => {
+            logout();
+            toast.success("Logged out successfully");
+            setTimeout(() => navigate("/login"), 1000);
+          }}
           className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white border-none 
         text-sm font-light py-2 px-20 rounded-full cursor-pointer"
         >

@@ -1,4 +1,7 @@
 import React, { use, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 import assets from "../assets/assets";
 
 const LoginPage = () => {
@@ -9,11 +12,28 @@ const LoginPage = () => {
   const [bio, setBio] = useState("");
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
 
-  const onSubmitHandler = (e) => {
+  const { signup, login, loading } = useAuthStore();
+
+  const navigate = useNavigate();
+
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
-    if (currState == "Sign up" && !isDataSubmitted) {
-      setIsDataSubmitted(true);
-      return;
+    try {
+      if (currState == "Sign up") {
+        if (!isDataSubmitted) {
+          setIsDataSubmitted(true);
+          return;
+        }
+        const newUser = await signup({ fullName, email, password, bio });
+        toast.success(`Welcome, ${newUser.fullName}!`);
+        setTimeout(() => navigate("/"), 1500);
+      } else {
+        const user = await login({ email, password });
+        toast.success(`Welcome back, ${user.fullName}`);
+        setTimeout(() => navigate("/"), 1500);
+      }
+    } catch (err) {
+      toast.error(err.message || "Somethign went wrong!");
     }
   };
 
