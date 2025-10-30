@@ -96,7 +96,7 @@ const ProfilePage = () => {
                 selectedImage ? URL.createObjectURL(selectedImage) : profilePic
               }
               alt=""
-              className={`w-12 h-12 ${selectedImage && "rounded-full"}`}
+              className="w-12 h-12 rounded-full"
             />
             Upload profile image
           </label>

@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,14 +10,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Conversation {
+  id        String    @id @default(cuid())
+  users     User[]    @relation("ConversationUsers")
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+}
 
-model User{
-  id String @id @default(cuid())
-  fullName    String
-  email       String   @unique
-  password    String
-  profilePic  String?  // optional
-  bio         String?  // optional
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model User {
+  id         String   @id @default(cuid())
+  fullName   String
+  email      String   @unique
+  password   String
+  profilePic String?
+  bio        String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  conversations Conversation[] @relation("ConversationUsers")
+}
+
+model Message {
+  id             String        @id @default(uuid())
+  content        String
+  senderId       String
+  receiverId     String
+  read           Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  attachment     String?
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
+  receiver       User          @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
 }

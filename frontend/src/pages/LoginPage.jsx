@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
 import assets from "../assets/assets";
+import { initSocket } from "../lib/socket";
 
 const LoginPage = () => {
   const [currState, setCurrState] = useState("Sign up");
@@ -25,10 +26,12 @@ const LoginPage = () => {
           return;
         }
         const newUser = await signup({ fullName, email, password, bio });
+        const socket = initSocket();
         toast.success(`Welcome, ${newUser.fullName}!`);
         setTimeout(() => navigate("/"), 1500);
       } else {
         const user = await login({ email, password });
+        const socket = initSocket();
         toast.success(`Welcome back, ${user.fullName}`);
         setTimeout(() => navigate("/"), 1500);
       }

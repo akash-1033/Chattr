@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import assets, { imagesDummyData } from "../assets/assets";
+import { closeSocket } from "../lib/socket";
 
 const RightSidebar = ({ selectedUser }) => {
   const { logout } = useAuthStore();
@@ -45,6 +46,7 @@ const RightSidebar = ({ selectedUser }) => {
         <button
           onClick={() => {
             logout();
+            closeSocket();
             toast.success("Logged out successfully");
             setTimeout(() => navigate("/login"), 1000);
           }}

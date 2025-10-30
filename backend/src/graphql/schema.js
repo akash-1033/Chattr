@@ -1,9 +1,12 @@
 import { gql } from "apollo-server-express";
 
 export const typeDefs = gql`
+  scalar DateTime
+
   type Query {
     testUsers: [User!]!
     getAllUsers: [User]
+    getConversationById(conversationId: ID!): Conversation!
   }
 
   type User {
@@ -19,6 +22,27 @@ export const typeDefs = gql`
 
   type UserPayload {
     user: User!
+  }
+
+  type Message {
+    id: ID!
+    content: String!
+    senderId: ID!
+    receiverId: ID!
+    read: Boolean!
+    attachment: String
+    createdAt: DateTime!
+    sender: User!
+    receiver: User!
+    conversationId: ID
+  }
+
+  type Conversation {
+    id: ID!
+    users: [User!]!
+    messages: [Message!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Mutation {

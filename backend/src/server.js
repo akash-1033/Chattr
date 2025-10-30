@@ -1,7 +1,10 @@
-import http, { Server } from "http";
+import http from "http";
+import { Server as IOServer } from "socket.io";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import initSocket from "./sockets/socketHandler.js";
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -42,6 +45,12 @@ async function start() {
   apollo.applyMiddleware({ app, path: "/graphql", cors: false });
 
   const httpServer = http.createServer(app);
+
+  const io = new IOServer(httpServer, {
+    path: "/socket.io",
+    cors: corsOptions,
+  });
+  initSocket(io, JWT_SECRET);
 
   httpServer.listen(PORT, () => {
     console.log(`Server running at PORT: ${PORT} ${apollo.graphqlPath}`);

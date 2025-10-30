@@ -14,6 +14,19 @@ export const resolvers = {
       if (!context.user) throw new Error("Not authenticated");
       return await getAllUsersExceptMe(context.user.userId);
     },
+
+    getConversationById: async (_, { conversationId }) => {
+      return await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          users: true,
+          messages: {
+            orderBy: { createdAt: "asc" },
+            include: { sender: true, receiver: true },
+          },
+        },
+      });
+    },
   },
 
   Mutation: {

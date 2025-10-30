@@ -3,6 +3,7 @@ import assets, { userDummyData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
+import { closeSocket } from "../lib/socket";
 
 const Sidebar = ({ selectedUser, setSelectedUser }) => {
   const { users, fetchUsers, logout } = useAuthStore();
@@ -40,6 +41,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
               <p
                 onClick={() => {
                   logout();
+                  closeSocket();
                   toast.success("Logged out successfully");
                   setTimeout(() => navigate("/login"), 1000);
                 }}
