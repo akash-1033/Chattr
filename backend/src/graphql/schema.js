@@ -7,6 +7,7 @@ export const typeDefs = gql`
     testUsers: [User!]!
     getAllUsers: [User]
     getConversationById(conversationId: ID!): Conversation!
+    getOrCreateConversationWith(userId: ID!): Conversation!
   }
 
   type User {

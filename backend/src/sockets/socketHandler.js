@@ -2,9 +2,6 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import prisma from "../prismaClient.js";
 
-const socketUserMap = new Map();
-const userSocketMap = new Map();
-
 export default function initSocket(io, JWT_SECRET) {
   io.use((socket, next) => {
     try {
@@ -24,16 +21,19 @@ export default function initSocket(io, JWT_SECRET) {
 
   io.on("connection", (socket) => {
     const userId = socket.userId;
-    console.log("Socket connected:", socket.id, "User: ", userId);
-
-    socketUserMap.set(socket.id, userId);
-    if (!userSocketMap.has(userId)) {
-      userSocketMap.set(userId, new Set());
-    }
-    userSocketMap.get(userId).add(socket.id);
-
     socket.join(`user_${userId}`);
-    socket.broadcast.emit("user:online", { userId });
+
+    prisma.conversation
+      .findMany({
+        where: { users: { some: { id: userId } } },
+        select: { id: true },
+      })
+      .then((convs) => {
+        convs.forEach((c) => socket.join(`conversation_${c.id}`));
+      })
+      .catch((e) => {
+        console.error("Failed to auto-join conversation rooms:", e);
+      });
 
     socket.on("joinConversation", ({ conversationId }) => {
       if (conversationId) {
@@ -41,7 +41,7 @@ export default function initSocket(io, JWT_SECRET) {
       }
     });
 
-    socket.on("sendMessage", async ({ payload, ack }) => {
+    socket.on("sendMessage", async ({ payload }, ack) => {
       try {
         const { toUserId, content, attachment } = payload;
         if (!toUserId || (!content && !attachment)) {
@@ -50,20 +50,14 @@ export default function initSocket(io, JWT_SECRET) {
 
         let conversation = await prisma.conversation.findFirst({
           where: {
-            user: {
-              some: { id: userId },
-            },
-            AND: {
-              users: { some: { id: toUserId } },
-            },
+            users: { some: { id: userId } },
+            AND: { users: { some: { id: toUserId } } },
           },
         });
 
         if (!conversation) {
           conversation = await prisma.conversation.create({
-            data: {
-              users: { connect: [{ id: userId }, { id: toUserId }] },
-            },
+            data: { users: { connect: [{ id: userId }, { id: toUserId }] } },
           });
         }
 
@@ -77,57 +71,25 @@ export default function initSocket(io, JWT_SECRET) {
           },
         });
 
-        const msgOut = {
-          ...message,
-          conversationId: conversation.id,
-        };
+        const msgOut = { ...message, conversationId: conversation.id };
 
+        io.in(`user_${toUserId}`).socketsJoin(
+          `conversation_${conversation.id}`
+        );
         io.to(`conversation_${conversation.id}`).emit(
           "message:receive",
           msgOut
         );
+
         ack && ack({ ok: true, message: msgOut });
       } catch (err) {
-        console.error("sendMessage error: ", err);
+        console.error("sendMessage error:", err);
         ack && ack({ ok: false, error: "Server error" });
       }
     });
 
-    socket.on("typing", ({ conversationId, isTyping }) => {
-      if (!conversationId) return;
-      socket.to(`conversation_${conversationId}`).emit("typing", {
-        from: userId,
-        isTyping,
-      });
-    });
-
-    socket.on("markRead", async ({ messageId }) => {
-      try {
-        const updated = await prisma.message.update({
-          where: { id: messageId },
-          data: { read: true },
-        });
-        io.to(`user_${updated.senderId}`).emit("message:read", {
-          messageId: updated.id,
-          by: userId,
-        });
-      } catch (err) {
-        console.error("markRead error:", err);
-      }
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", socket.id, reason);
-      socketUserMap.delete(socket.id);
-
-      const sockets = userSocketsMap.get(userId);
-      if (sockets) {
-        sockets.delete(socket.id);
-        if (sockets.size === 0) {
-          userSocketsMap.delete(userId);
-          socket.broadcast.emit("user:offline", { userId });
-        }
-      }
+    socket.on("disconnect", () => {
+      // console.log("socket")
     });
   });
 

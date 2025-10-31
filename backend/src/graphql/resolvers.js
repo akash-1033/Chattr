@@ -6,6 +6,7 @@ import {
   getAllUsersExceptMe,
   updateProfile,
 } from "../controllers/userController.js";
+import prisma from "../prismaClient.js";
 
 export const resolvers = {
   Query: {
@@ -26,6 +27,40 @@ export const resolvers = {
           },
         },
       });
+    },
+
+    getOrCreateConversationWith: async (_, { userId }, context) => {
+      if (!context.user) throw new Error("Not authenticated");
+      const me = context.user.userId;
+
+      let conversation = await prisma.conversation.findFirst({
+        where: {
+          users: { some: { id: me } },
+          AND: { users: { some: { id: userId } } },
+        },
+        include: {
+          users: true,
+          messages: {
+            orderBy: { createdAt: "asc" },
+            include: { sender: true, receiver: true },
+          },
+        },
+      });
+
+      if (!conversation) {
+        conversation = await prisma.conversation.create({
+          data: { users: { connect: [{ id: me }, { id: userId }] } },
+          include: {
+            users: true,
+            messages: {
+              orderBy: { createdAt: "asc" },
+              include: { sender: true, receiver: true },
+            },
+          },
+        });
+      }
+
+      return conversation;
     },
   },
 

@@ -1,13 +1,14 @@
 import { io } from "socket.io-client";
+import { useChatStore } from "../store/chatStore";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-let socket;
+let socket = null;
 
 export function initSocket() {
-  if (socket) return socket;
+  if (socket && socket.connected) return socket;
+  if (socket && !socket.connected) return socket;
 
-  console.log(import.meta.env.VITE_API_URL);
   socket = io(API_URL, {
     path: "/socket.io",
     withCredentials: true,
@@ -15,29 +16,34 @@ export function initSocket() {
   });
 
   socket.on("connect_error", (err) => {
-    console.log("Reason:", err.message);
-    console.log("Details:", err);
+    console.error("Socket connection error:", err.message);
   });
 
-  socket.on("connect", () => {
-    console.log("socket connected", socket.id);
+  socket.once("connect", () => {
+    const { activeConversationId } = useChatStore.getState();
+    if (activeConversationId) {
+      socket.emit("joinConversation", { conversationId: activeConversationId });
+    }
   });
 
   socket.on("disconnect", (reason) => {
-    console.log("socket disconnected", reason);
+    console.error("Socket disconnected:", reason);
   });
 
   return socket;
 }
 
 export function getSocket() {
-  if (!socket) return initSocket();
   return socket;
 }
 
 export const closeSocket = () => {
   if (socket) {
-    socket.disconnect();
-    socket = null;
+    try {
+      socket.disconnect();
+    } catch (e) {
+      console.error("Error closing socket:", e);
+    }
   }
+  socket = null;
 };

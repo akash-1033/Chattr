@@ -26,12 +26,12 @@ const LoginPage = () => {
           return;
         }
         const newUser = await signup({ fullName, email, password, bio });
-        const socket = initSocket();
+        // const socket = initSocket();
         toast.success(`Welcome, ${newUser.fullName}!`);
         setTimeout(() => navigate("/"), 1500);
       } else {
         const user = await login({ email, password });
-        const socket = initSocket();
+        // const socket = initSocket();
         toast.success(`Welcome back, ${user.fullName}`);
         setTimeout(() => navigate("/"), 1500);
       }

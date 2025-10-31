@@ -9,7 +9,7 @@ export const GET_ALL_USERS = `
   }
 `;
 
-const GET_CONVERSATION = `query GetConversation($conversationId: ID!) {
+export const GET_CONVERSATION = `query GetConversation($conversationId: ID!) {
   getConversationById(conversationId: $conversationId) {
     id
     users { id fullName profilePic }
@@ -21,3 +21,18 @@ const GET_CONVERSATION = `query GetConversation($conversationId: ID!) {
     createdAt updatedAt
   }
 }`;
+
+export const GET_OR_CREATE_CONVERSATION_WITH = `
+  query GetOrCreateConversationWith($userId: ID!) {
+    getOrCreateConversationWith(userId: $userId) {
+      id
+      users { id fullName profilePic }
+      messages {
+        id content senderId receiverId createdAt attachment conversationId read
+        sender { id fullName profilePic }
+        receiver { id fullName profilePic }
+      }
+      createdAt updatedAt
+    }
+  }
+`;
