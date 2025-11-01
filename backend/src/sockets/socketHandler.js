@@ -4,6 +4,8 @@ import prisma from "../prismaClient.js";
 import { uploadToS3 } from "../config/s3.js";
 import { generateCloudUrl } from "../utils/cloudfront.js";
 
+let onlineUsers = new Set();
+
 export default function initSocket(io, JWT_SECRET) {
   io.use((socket, next) => {
     try {
@@ -23,6 +25,13 @@ export default function initSocket(io, JWT_SECRET) {
 
   io.on("connection", (socket) => {
     const userId = socket.userId;
+
+    if (userId) {
+      onlineUsers.add(userId);
+      const userList = Array.from(onlineUsers);
+      io.emit("update_online_users", userList);
+    }
+
     socket.join(`user_${userId}`);
 
     prisma.conversation
@@ -116,9 +125,12 @@ export default function initSocket(io, JWT_SECRET) {
     });
 
     socket.on("disconnect", () => {
-      // console.log("socket")
+      if (userId) {
+        onlineUsers.delete(userId);
+        const userList = Array.from(onlineUsers);
+        io.emit("update_online_users", userList);
+      }
     });
   });
-
   return io;
 }

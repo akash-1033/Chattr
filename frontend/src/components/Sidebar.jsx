@@ -1,12 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import assets, { userDummyData } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
-import { closeSocket } from "../lib/socket";
+import { closeSocket, getSocket } from "../lib/socket";
 
 const Sidebar = ({ selectedUser, setSelectedUser }) => {
-  const { users, fetchUsers, logout } = useAuthStore();
+  const { users, fetchUsers, logout, onlineUsers } = useAuthStore();
+
+  const isUserOnline = (id) => {
+    return onlineUsers?.includes(id) || false;
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -82,17 +86,12 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
             />
             <div className="flex flex-col leading-5">
               <p>{user.fullName}</p>
-              {index < 3 ? (
+              {isUserOnline(user.id) ? (
                 <span className="text-green-400 text-xs">Online</span>
               ) : (
                 <span className="text-neutral-400 text-xs">Offline</span>
               )}
             </div>
-            {index > 2 && (
-              <p className="absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50">
-                {index}
-              </p>
-            )}
           </div>
         ))}
       </div>

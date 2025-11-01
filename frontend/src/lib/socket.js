@@ -15,6 +15,8 @@ export function initSocket() {
     transports: ["websocket", "polling"],
   });
 
+  // setupPresenceListeners(socket);
+
   socket.on("connect_error", (err) => {
     console.error("Socket connection error:", err.message);
   });

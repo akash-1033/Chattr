@@ -16,6 +16,7 @@ export const useChatStore = create(
       socketInitiated: false,
       loading: false,
 
+
       initSocketConnection: () => {
         const s = getSocket() || initSocket();
         if (!s) return;

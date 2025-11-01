@@ -14,8 +14,11 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       users: [],
+      onlineUsers: [],
       loading: false,
       error: null,
+
+      setOnlineUsers: (userIds) => set({ onlineUsers: userIds }),
 
       fetchUsers: async () => {
         try {

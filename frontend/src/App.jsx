@@ -12,8 +12,16 @@ const App = () => {
 
   useEffect(() => {
     if (user) {
-      initSocket();
+      const socket = initSocket();
       useChatStore.getState().initSocketConnection();
+      socket.on("update_online_users", (userIds) => {
+        useAuthStore.getState().setOnlineUsers(userIds);
+      });
+
+      return () => {
+        socket.off("update_online_users");
+        closeSocket();
+      };
     } else {
       closeSocket();
     }

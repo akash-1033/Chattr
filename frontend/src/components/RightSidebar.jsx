@@ -7,9 +7,13 @@ import assets from "../assets/assets";
 import { closeSocket } from "../lib/socket";
 
 const RightSidebar = ({ selectedUser }) => {
-  const { logout } = useAuthStore();
+  const { logout, onlineUsers } = useAuthStore();
   const { conversations, activeConversationId } = useChatStore();
   const navigate = useNavigate();
+
+  const isUserOnline = (id) => {
+    return onlineUsers?.includes(id) || false;
+  };
 
   const mediaImages = useMemo(() => {
     if (!activeConversationId) return [];
@@ -37,7 +41,9 @@ const RightSidebar = ({ selectedUser }) => {
           className="w-20 aspect-[1/1] rounded-full"
         />
         <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-2">
-          <p className="w-2 h-2 rounded-full bg-green-500"></p>
+          {isUserOnline(selectedUser.id) && (
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+          )}
           {selectedUser.fullName}
         </h1>
         <p className="px-10 mx-auto">{selectedUser.bio}</p>
