@@ -138,7 +138,7 @@ export const useChatStore = create(
         set({ activeConversationId: id });
       },
 
-      sendMessageViaSocket: (convId, toUserId, text) => {
+      sendMessageViaSocket: (convId, toUserId, text, attachment = null) => {
         const s = getSocket();
         if (!s) return;
 
@@ -157,7 +157,9 @@ export const useChatStore = create(
           get().addMessageToConversation(convId, tempMsg);
         }
 
-        const payload = { toUserId, content: text };
+        const payload = { toUserId, content: text || null };
+        if (attachment && attachment.fileBuffer){
+          payload.attachment = attachment;}
         s.emit("sendMessage", { payload }, (ack) => {
           if (!ack?.ok || !ack.message) {
             if (hasConv && tempMsg) {

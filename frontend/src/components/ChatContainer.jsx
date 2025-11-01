@@ -7,6 +7,7 @@ import { useAuthStore } from "../store/authStore";
 const ChatContainer = ({ selectedUser, setSelectedUser }) => {
   const scrollEnd = useRef();
   const [msg, setMsg] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const { user } = useAuthStore();
 
@@ -20,6 +21,15 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
   const setActiveConversation = useChatStore((s) => s.setActiveConversation);
 
   const hydrated = useChatStore.persist.hasHydrated();
+
+  const toBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   useEffect(() => {
     if (!hydrated) return;
@@ -55,12 +65,31 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
   const activeConv = conversations[activeConversationId];
   const messages = activeConv?.messages || [];
 
-  const handleSend = () => {
-    if (!msg.trim()) return;
+  const handleSend = async () => {
+    if (!msg.trim() && !selectedImage) return;
+    if (!selectedUser?.id) return;
+
     const convId = activeConversationId || selectedUser?.conversationId || null;
-    if (!msg || !selectedUser?.id) return;
-    sendMessageViaSocket(convId, selectedUser.id, msg);
+
+    let fileBuffer = null;
+    let fileName = null;
+    let contentType = null;
+
+    if (selectedImage) {
+      const base64 = await toBase64(selectedImage);
+      fileBuffer = base64.split(",")[1];
+      contentType = selectedImage.type;
+      fileName = selectedImage.name;
+    }
+
+    sendMessageViaSocket(convId, selectedUser.id, msg, {
+      fileBuffer,
+      contentType,
+      fileName,
+    });
+
     setMsg("");
+    setSelectedImage(null);
   };
 
   return selectedUser ? (
@@ -112,11 +141,11 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
                     </p>
                   </div>
                 )}
-          
+
                 {/* Message bubble */}
-                {m.image ? (
+                {m.imageUrl ? (
                   <img
-                    src={m.image}
+                    src={m.imageUrl}
                     alt=""
                     className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
                   />
@@ -131,7 +160,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
                     {m.content}
                   </p>
                 )}
-          
+
                 {/* Show profile on RIGHT for sender messages */}
                 {isSender && (
                   <div className="text-center text-xs flex flex-col items-center gap-1">
@@ -161,7 +190,17 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
             placeholder="Send a message..."
             className="flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placeholder-gray-400"
           />
-          <input type="file" id="image" accept="image/png, image/jpeg" hidden />
+          <input
+            type="file"
+            id="image"
+            accept="image/png, image/jpeg"
+            hidden
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setSelectedImage(e.target.files[0]);
+              }
+            }}
+          />
           <label htmlFor="image">
             <img
               src={assets.gallery_icon}

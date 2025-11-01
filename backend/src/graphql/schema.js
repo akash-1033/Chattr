@@ -32,6 +32,7 @@ export const typeDefs = gql`
     receiverId: ID!
     read: Boolean!
     attachment: String
+    imageUrl: String
     createdAt: DateTime!
     sender: User!
     receiver: User!

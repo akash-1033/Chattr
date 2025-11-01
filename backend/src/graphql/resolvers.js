@@ -7,6 +7,8 @@ import {
   updateProfile,
 } from "../controllers/userController.js";
 import prisma from "../prismaClient.js";
+import { deleteFromS3, uploadToS3 } from "../config/s3.js";
+import { generateCloudUrl } from "../utils/cloudfront.js";
 
 export const resolvers = {
   Query: {
@@ -17,7 +19,7 @@ export const resolvers = {
     },
 
     getConversationById: async (_, { conversationId }) => {
-      return await prisma.conversation.findUnique({
+      const convo = await prisma.conversation.findUnique({
         where: { id: conversationId },
         include: {
           users: true,
@@ -27,6 +29,15 @@ export const resolvers = {
           },
         },
       });
+      if (!convo) throw new Error("Conversation not found");
+
+      for (const msg of convo.messages) {
+        if (msg.attachment) {
+          msg.imageUrl = await generateCloudUrl(msg.attachment);
+          console.log(msg.imageUrl);
+        }
+      }
+      return convo;
     },
 
     getOrCreateConversationWith: async (_, { userId }, context) => {

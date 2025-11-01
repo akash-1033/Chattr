@@ -1,6 +1,8 @@
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import prisma from "../prismaClient.js";
+import { uploadToS3 } from "../config/s3.js";
+import { generateCloudUrl } from "../utils/cloudfront.js";
 
 export default function initSocket(io, JWT_SECRET) {
   io.use((socket, next) => {
@@ -61,17 +63,42 @@ export default function initSocket(io, JWT_SECRET) {
           });
         }
 
+        let imageKey = null;
+        let signedUrl = null;
+
+        if (
+          attachment?.fileBuffer &&
+          attachment?.fileName &&
+          attachment?.contentType
+        ) {
+          imageKey = `chatImages/${userId}-${Date.now()}-${
+            attachment.fileName
+          }`;
+          await uploadToS3(
+            attachment.fileBuffer,
+            imageKey,
+            attachment.contentType
+          );
+
+          signedUrl = await generateCloudUrl(imageKey);
+          // console.log(signedUrl);
+        }
+
         const message = await prisma.message.create({
           data: {
             content: content || null,
-            attachment: attachment || null,
+            attachment: imageKey || null,
             senderId: userId,
             receiverId: toUserId,
             conversationId: conversation.id,
           },
         });
 
-        const msgOut = { ...message, conversationId: conversation.id };
+        const msgOut = {
+          ...message,
+          conversationId: conversation.id,
+          imageUrl: signedUrl,
+        };
 
         io.in(`user_${toUserId}`).socketsJoin(
           `conversation_${conversation.id}`
