@@ -36,7 +36,7 @@ model User {
 
 model Message {
   id             String        @id @default(uuid())
-  content        String
+  content        String?
   senderId       String
   receiverId     String
   read           Boolean       @default(false)

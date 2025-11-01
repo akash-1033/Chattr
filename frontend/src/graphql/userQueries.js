@@ -14,7 +14,7 @@ export const GET_CONVERSATION = `query GetConversation($conversationId: ID!) {
     id
     users { id fullName profilePic }
     messages {
-      id content senderId receiverId createdAt attachment conversationId read
+      id content senderId receiverId createdAt imageUrl attachment conversationId read
       sender { id fullName profilePic }
       receiver { id fullName profilePic }
     }
@@ -28,7 +28,7 @@ export const GET_OR_CREATE_CONVERSATION_WITH = `
       id
       users { id fullName profilePic }
       messages {
-        id content senderId receiverId createdAt attachment conversationId read
+        id content senderId receiverId createdAt attachment imageUrl conversationId read
         sender { id fullName profilePic }
         receiver { id fullName profilePic }
       }

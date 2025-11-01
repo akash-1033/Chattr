@@ -145,7 +145,10 @@ export const useChatStore = create(
         const hasConv = !!convId;
         let tempMsg = null;
 
-        if (hasConv) {
+        if (!text?.trim() && !attachment) return;
+
+        const isImageOnly = !text?.trim() && attachment?.fileBuffer;
+        if (hasConv && !isImageOnly) {
           tempMsg = {
             id: "temp-" + Date.now(),
             senderId: useAuthStore.getState().user?.id,
@@ -157,9 +160,12 @@ export const useChatStore = create(
           get().addMessageToConversation(convId, tempMsg);
         }
 
-        const payload = { toUserId, content: text || null };
-        if (attachment && attachment.fileBuffer){
-          payload.attachment = attachment;}
+        const payload = {};
+        if (text?.trim()) payload.content = text.trim();
+        if (attachment && attachment.fileBuffer) {
+          payload.attachment = attachment;
+        }
+        payload.toUserId = toUserId;
         s.emit("sendMessage", { payload }, (ack) => {
           if (!ack?.ok || !ack.message) {
             if (hasConv && tempMsg) {
@@ -184,6 +190,12 @@ export const useChatStore = create(
           set((state) => {
             const nextConvs = { ...state.conversations };
 
+            // 🧩 FIX: Skip adding if we already have it from "message:receive"
+            const already = (nextConvs[newConvId]?.messages || []).some(
+              (m) => m.id === serverMsg.id
+            );
+            if (already) return state;
+
             if (hasConv && tempMsg) {
               const convMsgs = (
                 state.conversations[convId]?.messages || []
@@ -194,6 +206,14 @@ export const useChatStore = create(
               };
               return { conversations: nextConvs };
             }
+
+            nextConvs[newConvId] = {
+              ...(state.conversations[newConvId] || { id: newConvId }),
+              messages: [
+                ...(state.conversations[newConvId]?.messages || []),
+                serverMsg,
+              ],
+            };
 
             return {
               conversations: nextConvs,

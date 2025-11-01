@@ -27,7 +27,7 @@ export const typeDefs = gql`
 
   type Message {
     id: ID!
-    content: String!
+    content: String
     senderId: ID!
     receiverId: ID!
     read: Boolean!

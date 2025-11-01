@@ -94,6 +94,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
 
   return selectedUser ? (
     <div className="h-full overflow-hidden relative backdrop-blur-lg">
+      {/* Header */}
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
         <img
           src={selectedUser.profilePicUrl}
@@ -113,6 +114,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
         <img src={assets.help_icon} alt="" className="max-md:hidden w-5" />
       </div>
 
+      {/* Chat messages */}
       <div className="flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6">
         {messages.length === 0 ? (
           <p className="text-center text-gray-500 mt-10">
@@ -121,14 +123,16 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
         ) : (
           messages.map((m) => {
             const isSender = user?.id && m.senderId === user.id;
+            const key = m.id || `${m.senderId}-${m.createdAt}`; // 🔧 FIXED: unique key
+
             return (
               <div
-                key={`${m.id}-${m.createdAt || ""}`}
+                key={key}
                 className={`flex items-end gap-2 mb-4 ${
                   isSender ? "justify-end" : "justify-start"
                 }`}
               >
-                {/* Show profile on LEFT for receiver messages */}
+                {/* LEFT profile */}
                 {!isSender && (
                   <div className="text-center text-xs flex flex-col items-center gap-1">
                     <img
@@ -142,26 +146,33 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
                   </div>
                 )}
 
-                {/* Message bubble */}
-                {m.imageUrl ? (
-                  <img
-                    src={m.imageUrl}
-                    alt=""
-                    className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden"
-                  />
-                ) : (
-                  <p
-                    className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg break-all text-white ${
-                      isSender
-                        ? "bg-violet-500/30 rounded-br-none"
-                        : "bg-gray-700/50 rounded-bl-none"
-                    }`}
-                  >
-                    {m.content}
-                  </p>
-                )}
+                {/* 🔧 FIXED: support both content and image */}
+                <div
+                  className={`flex flex-col gap-2 max-w-[250px] ${
+                    isSender ? "items-end" : "items-start"
+                  }`}
+                >
+                  {m.imageUrl && (
+                    <img
+                      src={m.imageUrl}
+                      alt="attachment"
+                      className="rounded-lg border border-gray-700 max-w-full"
+                    />
+                  )}
+                  {m.content && (
+                    <p
+                      className={`p-2 text-sm font-light rounded-lg break-all text-white ${
+                        isSender
+                          ? "bg-violet-500/30 rounded-br-none"
+                          : "bg-gray-700/50 rounded-bl-none"
+                      }`}
+                    >
+                      {m.content}
+                    </p>
+                  )}
+                </div>
 
-                {/* Show profile on RIGHT for sender messages */}
+                {/* RIGHT profile */}
                 {isSender && (
                   <div className="text-center text-xs flex flex-col items-center gap-1">
                     <img
@@ -181,6 +192,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }) => {
         <div ref={scrollEnd}></div>
       </div>
 
+      {/* Input */}
       <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 p-3">
         <div className="flex-1 flex items-center bg-gray-100/12 px-3 rounded-full">
           <input

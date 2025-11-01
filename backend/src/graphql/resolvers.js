@@ -34,7 +34,7 @@ export const resolvers = {
       for (const msg of convo.messages) {
         if (msg.attachment) {
           msg.imageUrl = await generateCloudUrl(msg.attachment);
-          console.log(msg.imageUrl);
+          // console.log(msg.imageUrl);
         }
       }
       return convo;
@@ -69,6 +69,12 @@ export const resolvers = {
             },
           },
         });
+      }
+      for (const msg of conversation.messages) {
+        if (msg.attachment) {
+          msg.imageUrl = await generateCloudUrl(msg.attachment);
+          // console.log(msg.imageUrl);
+        }
       }
 
       return conversation;
