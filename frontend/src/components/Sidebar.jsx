@@ -42,6 +42,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
                 onClick={() => {
                   logout();
                   closeSocket();
+                  localStorage.clear();
                   toast.success("Logged out successfully");
                   setTimeout(() => navigate("/login"), 1000);
                 }}
