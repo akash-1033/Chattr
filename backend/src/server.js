@@ -7,7 +7,7 @@ import cors from "cors";
 import initSocket from "./sockets/socketHandler.js";
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "https://chattrr.pages.dev/login"],
   credentials: true,
 };
 
@@ -21,7 +21,7 @@ import { ApolloServer } from "apollo-server-express";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 async function start() {
   const apollo = new ApolloServer({

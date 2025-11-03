@@ -7,6 +7,7 @@ import { generateCloudUrl } from "../utils/cloudfront.js";
 let onlineUsers = new Set();
 
 export default function initSocket(io, JWT_SECRET) {
+  // socket.io middleware runs before any client connects
   io.use((socket, next) => {
     try {
       const raw = socket.request.headers.cookie || "";
@@ -26,14 +27,17 @@ export default function initSocket(io, JWT_SECRET) {
   io.on("connection", (socket) => {
     const userId = socket.userId;
 
+    // for online presence check
     if (userId) {
       onlineUsers.add(userId);
       const userList = Array.from(onlineUsers);
       io.emit("update_online_users", userList);
     }
 
+    // join private room
     socket.join(`user_${userId}`);
 
+    // auto join all vailable conversations
     prisma.conversation
       .findMany({
         where: { users: { some: { id: userId } } },
@@ -46,6 +50,7 @@ export default function initSocket(io, JWT_SECRET) {
         console.error("Failed to auto-join conversation rooms:", e);
       });
 
+    // manual conversation join
     socket.on("joinConversation", ({ conversationId }) => {
       if (conversationId) {
         socket.join(`conversation_${conversationId}`);
@@ -59,6 +64,7 @@ export default function initSocket(io, JWT_SECRET) {
           return ack && ack({ ok: false, error: "Invalid payload" });
         }
 
+        // get conversations
         let conversation = await prisma.conversation.findFirst({
           where: {
             users: { some: { id: userId } },
@@ -66,6 +72,7 @@ export default function initSocket(io, JWT_SECRET) {
           },
         });
 
+        // create conversation if not present
         if (!conversation) {
           conversation = await prisma.conversation.create({
             data: { users: { connect: [{ id: userId }, { id: toUserId }] } },
@@ -93,6 +100,7 @@ export default function initSocket(io, JWT_SECRET) {
           // console.log(signedUrl);
         }
 
+        // save message to db
         const message = await prisma.message.create({
           data: {
             content: content || null,
@@ -109,9 +117,12 @@ export default function initSocket(io, JWT_SECRET) {
           imageUrl: signedUrl,
         };
 
+        // ensure user has join conversation
         io.in(`user_${toUserId}`).socketsJoin(
           `conversation_${conversation.id}`
         );
+
+        // emit message to all in conversation
         io.to(`conversation_${conversation.id}`).emit(
           "message:receive",
           msgOut
