@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,26 +9,24 @@ datasource db {
 
 model Conversation {
   id        String    @id @default(cuid())
-  users     User[]    @relation("ConversationUsers")
-  messages  Message[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now())
+  messages  Message[]
+  users     User[]    @relation("ConversationUsers")
 }
 
 model User {
-  id         String   @id @default(cuid())
-  fullName   String
-  email      String   @unique
-  password   String
-  profilePic String?
-  bio        String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  sentMessages     Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
-
-  conversations Conversation[] @relation("ConversationUsers")
+  id               String         @id @default(cuid())
+  fullName         String
+  email            String         @unique
+  password         String
+  profilePic       String?
+  bio              String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  sentMessages     Message[]      @relation("SentMessages")
+  conversations    Conversation[] @relation("ConversationUsers")
 }
 
 model Message {
@@ -42,8 +37,8 @@ model Message {
   read           Boolean       @default(false)
   createdAt      DateTime      @default(now())
   attachment     String?
-  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
-  receiver       User          @relation("ReceivedMessages", fields: [receiverId], references: [id])
   conversationId String?
   conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  receiver       User          @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
 }
