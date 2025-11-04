@@ -10,6 +10,7 @@ import { useChatStore } from "./store/chatStore";
 const App = () => {
   const { user } = useAuthStore();
 
+  // initialise socket
   useEffect(() => {
     if (user) {
       const socket = initSocket();
