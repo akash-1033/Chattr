@@ -1,4 +1,5 @@
 import http from "http";
+import express from "express";
 import { Server as IOServer } from "socket.io";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -40,7 +41,11 @@ async function start() {
     },
   });
 
-  app.use("/graphql", cors(corsOptions));
+  app.use(cors(corsOptions));
+  app.use(cookieParser());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
   await apollo.start();
   apollo.applyMiddleware({ app, path: "/graphql", cors: false });
 
