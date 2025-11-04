@@ -7,7 +7,7 @@ import cors from "cors";
 import initSocket from "./sockets/socketHandler.js";
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://chattrr.pages.dev/login"],
+  origin: ["http://localhost:5173", "https://chattrr.pages.dev"],
   credentials: true,
 };
 
